@@ -1,0 +1,203 @@
+
+# -*- coding: utf-8 -*-
+import traceback
+import streamlit as st
+import pandas as pd
+import io
+import matplotlib.pyplot as plt
+import web_functions as wf
+import options4 as opfour
+
+@st.cache_data
+def load_data():
+    dean_df = wf.readfile()
+    unique_df = pd.read_excel('unique_deansDailyCsar_FTE.xlsx')
+    fte_tier = pd.read_excel('FTE_Tier.xlsx')
+    dean_df.columns = dean_df.columns.str.strip()
+    unique_df.columns = unique_df.columns.str.strip()
+    return dean_df, unique_df, fte_tier
+
+dean_df, unique_df, fte_tier = load_data()
+
+def save_report(df_full, filename):
+    user_filename = st.text_input("Enter a filename (e.g., my_report.xlsx):", value=filename)
+    
+    if filename:
+
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df_full.to_excel(writer, sheet_name='Full Report', index=False)
+
+        st.download_button("Save Report", output.getvalue(), file_name=user_filename)
+
+
+st.title('FTE Report Generator')
+st.sidebar.title("Navigation")
+
+menu = [
+    "Home",
+    "Sec Division Report",
+    "Course Enrollment Percentage",
+    "FTE by Division",
+    "FTE per Instructor",
+    "FTE per Course"
+]
+
+
+choice = st.sidebar.selectbox("Choose Report Option", menu)
+
+if choice == "Sec Division Report":
+    st.header("Sec Division Report")
+    if 'Sec Divisions' in dean_df.columns:
+        division = st.selectbox("Select Division", dean_df['Sec Divisions'].dropna().unique())
+
+        run = st.button("Run Report")
+        if run:
+            filtered = dean_df[dean_df['Sec Divisions'] == division]
+            filtered.index = range(1, len(filtered) + 1)
+
+            st.dataframe(filtered.head(10))
+            save_report(filtered, f"{division}_Division_Report.xlsx")
+    else:
+        st.warning("This feature will run when 'Sec Divisions' is available in the dataset.")
+
+elif choice == "Course Enrollment Percentage":
+    st.header("Course Enrollment Percentage")
+    if 'Sec Name' in dean_df.columns:
+        course = st.selectbox("Select Course", dean_df['Course Code'].dropna().unique())
+        run = st.button("Run Report")
+        if run:
+            filtered = dean_df[dean_df['Course Code'] == course]
+            filtered = filtered.drop_duplicates(subset="Sec Name")
+            filtered["Enrollment Percentage"] = filtered.apply(wf.calc_enrollment, axis=1)
+            st.dataframe(filtered.head(10))
+            save_report(filtered, f"{course}_Course_Report.xlsx")
+    else:
+        st.warning("This feature will run when 'Sec Name' is available in the dataset.")
+
+elif choice == "FTE by Division":
+    st.header("FTE by Division")
+
+    if 'Sec Divisions' in dean_df.columns:
+        division_input = st.selectbox("Select Division", dean_df['Sec Divisions'].dropna().unique())
+        run = st.button("Run Report")
+
+        if run:
+            raw_df, orig_total, gen_total = wf.fte_by_div_raw(dean_df, fte_tier, division_input)
+            report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
+
+            # fiund topp 10 ion data frame 
+            # sort dataframe by top 10 thje reset index
+            # use .head(10) to display top 10
+            plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
+            plot_df = plot_df.iloc[:, 2:]
+            plot_df = plot_df.sort_values(by='Total FTE', ascending=False)
+            # Format Dataframe
+            plot_df.index = range(1, len(plot_df) + 1)
+
+            # Display Dataframe
+            st.dataframe(plot_df.head(10))
+
+            # Format for plot
+
+            # Display Plot
+            st.bar_chart(plot_df.set_index('Sec Name')['Total FTE'].head(10))
+
+            # Save button
+            save_report(report_df, f"{division_input}_FTE_Report.xlsx")
+
+            st.info(f"Total FTE: {orig_total:.2f}")
+            st.info(f"Generated FTE: ${gen_total:,.2f}")
+    else:
+        st.info("Division data not available.")
+
+elif choice == "FTE per Instructor":
+    st.header("FTE per Instructor")
+    if 'Sec All Faculty Last Names' in dean_df.columns:
+        faculty_list = sorted(dean_df["Sec Faculty Info"].dropna().unique())
+        instructor = st.selectbox("Select Instructor", faculty_list)
+
+        run = st.button("Run Report")
+        if run:
+            report_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(dean_df, fte_tier, instructor)
+            report_df = report_df.fillna("")
+
+            if report_df is not None:
+                # Format dataframe
+                report_df.index = range(1, len(report_df) + 1)
+
+                # Display dataframe
+                st.dataframe(report_df)
+
+                # Format dataframe for plot
+                report_df = report_df.sort_values(by='Total FTE', ascending=False)
+
+                # Display Plot
+                st.bar_chart(report_df[report_df['Sec Name'] != 'TOTAL'].set_index('Sec Name')['Total FTE'])
+
+                # Save Report
+                filename = opfour.clean_instructor_name(instructor)
+                save_report(report_df, filename)
+
+                st.info(f"Total FTE: {orig_fte:.3f}")
+                st.info(f"Generated FTE: ${gen_fte:,.2f}")
+
+            else:
+                st.warning("Select an Instructor.")
+    else:
+        st.warning("Instructor name column missing.")
+
+elif choice == "FTE per Course":
+    st.header("FTE per Course")
+    if 'Sec Name' in unique_df.columns:
+        course_name = st.text_input("Enter Course Name (Sec Name)")
+        run = st.button("Run Report")
+        if run:
+            df_result, original_fte, generated_fte = wf.calculate_fte_by_course(dean_df, fte_tier, course_name)
+            if df_result is not None:
+                # Format dataframe
+                df_result.index = range(1, len(df_result) + 1)
+
+                # Display dataframe
+                st.dataframe(df_result.head(10))
+
+                # Format dataframe
+                df_result = df_result.sort_values(by='Total FTE', ascending=False)
+
+                # Plot the dataframe
+                st.bar_chart(df_result[df_result['Sec Name'] != 'COURSE TOTAL'].set_index('Sec Name')['Total FTE'])
+
+                # Save Report button
+                save_report(df_result, f"{course_name}_FTE_Report.xlsx")
+
+                # Display Info to user
+                st.info(f"Original Total FTE: {original_fte:.2f}")
+                st.info(f"Generated FTE: ${generated_fte:,.2f}")
+            else:
+                st.warning("Course not found.")
+    else:
+        st.warning("This feature will run when 'Sec Name' is present in the FTE dataset.")
+
+elif choice == "Home":
+
+    st.title("📘 What is Generated FTE?")
+    st.markdown("""
+    **FTE (Full-Time Equivalent)** credits are produced by student enrollment in specific courses or programs.
+
+    Because not all students are full-time, this allows the school to add up all the time students spend in class to calculate how many full-time students that would equal.
+    """)
+
+    st.markdown("---")
+    st.header("🛠 Description of Each Option")
+    st.markdown("""
+    - **By Division**: Generate a report showing FTE by department.
+    - **By Course Section**: View enrollment percentage and FTE for a specific class section.
+    - **Division Summary**: Summary of FTE for all courses within a division.
+    - **Instructor View**: FTE generated by each course an instructor teaches.
+    - **By Course**: FTE report for all sections under a single course.
+    """)
+    st.markdown("---")
+    st.header("📁 Upload Enrollment File")
+    uploaded_file = st.file_uploader("Choose a file", type=["xlsx", "csv"])
+    if uploaded_file is not None:
+        st.success(f"Uploaded file: {uploaded_file.name}")
