@@ -1,15 +1,43 @@
+"""
+Streamlit App – Faculty FTE Report Generator
+
+This application reads course enrollment and FTE data, then allows users
+to generate customized reports and visualizations for:
+
+- Divisions
+- Individual Courses
+- Instructor Performance
+- Section Enrollment Ratios
+
+Outputs can be previewed, graphed, and downloaded as Excel files.
+
+Modules:
+--------
+- `web_functions` (wf): contains data preprocessing and report logic
+- `options4` (opfour): utility functions for formatting and cleaning
+"""
 
 # -*- coding: utf-8 -*-
-import traceback
+import io
 import streamlit as st
 import pandas as pd
-import io
-import matplotlib.pyplot as plt
 import web_functions as wf
 import options4 as opfour
 
+
 @st.cache_data
 def load_data():
+    """
+    Loads and caches core datasets for the app.
+
+    Returns
+    -------
+    tuple(pd.DataFrame, pd.DataFrame, pd.DataFrame)
+        - dean_df: Full section-level dataset
+        - unique_df: Dataset with unique course sections
+        - fte_tier: Tier mapping for FTE generation
+    """
+
     dean_df = wf.readfile()
     unique_df = pd.read_excel('unique_deansDailyCsar_FTE.xlsx')
     fte_tier = pd.read_excel('FTE_Tier.xlsx')
@@ -17,23 +45,36 @@ def load_data():
     unique_df.columns = unique_df.columns.str.strip()
     return dean_df, unique_df, fte_tier
 
+
 dean_df, unique_df, fte_tier = load_data()
 
+
 def save_report(df_full, filename):
-    user_filename = st.text_input("Enter a filename (e.g., my_report.xlsx):", value=filename)
-    
+    """
+    Prompts the user to name and download an Excel report.
+
+    Parameters
+    ----------
+    df_full : pd.DataFrame
+        The DataFrame to export.
+    filename : str
+        Suggested default filename for the export.
+    """
+
+    user_filename = st.text_input("Enter a filename (e.g., my_report.xlsx):",
+                                  value=filename)
+
     if filename:
 
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             df_full.to_excel(writer, sheet_name='Full Report', index=False)
 
-        st.download_button("Save Report", output.getvalue(), file_name=user_filename)
+        st.download_button("Save Report", output.getvalue(),
+                           file_name=user_filename)
 
 
-st.title('FTE Report Generator')
-st.sidebar.title("Navigation")
-
+# We are generating the sidebar here
 menu = [
     "Home",
     "Sec Division Report",
@@ -43,13 +84,18 @@ menu = [
     "FTE per Course"
 ]
 
-
+st.sidebar.title("Navigation")
 choice = st.sidebar.selectbox("Choose Report Option", menu)
 
+# Title that will stay at the top of the program
+st.title('FTE Report Generator')
+
+# Branches for the sidebar menu
 if choice == "Sec Division Report":
     st.header("Sec Division Report")
     if 'Sec Divisions' in dean_df.columns:
-        division = st.selectbox("Select Division", dean_df['Sec Divisions'].dropna().unique())
+        division = st.selectbox("Select Division",
+                                dean_df['Sec Divisions'].dropna().unique())
 
         run = st.button("Run Report")
         if run:
@@ -64,12 +110,15 @@ if choice == "Sec Division Report":
 elif choice == "Course Enrollment Percentage":
     st.header("Course Enrollment Percentage")
     if 'Sec Name' in dean_df.columns:
-        course = st.selectbox("Select Course", dean_df['Course Code'].dropna().unique())
+        course = st.selectbox("Select Course",
+                              dean_df['Course Code'].dropna().unique())
         run = st.button("Run Report")
         if run:
             filtered = dean_df[dean_df['Course Code'] == course]
             filtered = filtered.drop_duplicates(subset="Sec Name")
-            filtered["Enrollment Percentage"] = filtered.apply(wf.calc_enrollment, axis=1)
+            filtered["Enrollment Percentage"] = filtered.apply(
+                wf.calc_enrollment, axis=1)
+
             st.dataframe(filtered.head(10))
             save_report(filtered, f"{course}_Course_Report.xlsx")
     else:
@@ -79,19 +128,23 @@ elif choice == "FTE by Division":
     st.header("FTE by Division")
 
     if 'Sec Divisions' in dean_df.columns:
-        division_input = st.selectbox("Select Division", dean_df['Sec Divisions'].dropna().unique())
+        division_input = st.selectbox(
+            "Select Division", dean_df['Sec Divisions'].dropna().unique())
+
         run = st.button("Run Report")
 
         if run:
             raw_df, orig_total, gen_total = wf.fte_by_div_raw(dean_df, fte_tier, division_input)
+
             report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
 
-            # fiund topp 10 ion data frame 
-            # sort dataframe by top 10 thje reset index
+            # find top 10 in data frame
+            # sort dataframe by top 10 the reset index
             # use .head(10) to display top 10
             plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
             plot_df = plot_df.iloc[:, 2:]
             plot_df = plot_df.sort_values(by='Total FTE', ascending=False)
+
             # Format Dataframe
             plot_df.index = range(1, len(plot_df) + 1)
 
@@ -119,7 +172,9 @@ elif choice == "FTE per Instructor":
 
         run = st.button("Run Report")
         if run:
-            report_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(dean_df, fte_tier, instructor)
+            report_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(
+                dean_df, fte_tier, instructor)
+
             report_df = report_df.fillna("")
 
             if report_df is not None:
@@ -130,10 +185,13 @@ elif choice == "FTE per Instructor":
                 st.dataframe(report_df)
 
                 # Format dataframe for plot
-                report_df = report_df.sort_values(by='Total FTE', ascending=False)
+                report_df = report_df.sort_values(by='Total FTE',
+                                                  ascending=False)
 
                 # Display Plot
-                st.bar_chart(report_df[report_df['Sec Name'] != 'TOTAL'].set_index('Sec Name')['Total FTE'])
+                st.bar_chart(report_df
+                             [report_df['Sec Name'] != 'TOTAL']
+                             .set_index('Sec Name')['Total FTE'])
 
                 # Save Report
                 filename = opfour.clean_instructor_name(instructor)
@@ -154,6 +212,7 @@ elif choice == "FTE per Course":
         run = st.button("Run Report")
         if run:
             df_result, original_fte, generated_fte = wf.calculate_fte_by_course(dean_df, fte_tier, course_name)
+
             if df_result is not None:
                 # Format dataframe
                 df_result.index = range(1, len(df_result) + 1)
@@ -162,10 +221,13 @@ elif choice == "FTE per Course":
                 st.dataframe(df_result.head(10))
 
                 # Format dataframe
-                df_result = df_result.sort_values(by='Total FTE', ascending=False)
+                df_result = df_result.sort_values(by='Total FTE',
+                                                  ascending=False)
 
                 # Plot the dataframe
-                st.bar_chart(df_result[df_result['Sec Name'] != 'COURSE TOTAL'].set_index('Sec Name')['Total FTE'])
+                st.bar_chart(df_result
+                             [df_result['Sec Name'] != 'COURSE TOTAL']
+                             .set_index('Sec Name')['Total FTE'])
 
                 # Save Report button
                 save_report(df_result, f"{course_name}_FTE_Report.xlsx")
