@@ -211,7 +211,7 @@ def fte_by_div_raw(file_in, fte_tier, div_code):
             'Sec Faculty Info': row['Sec Faculty Info'],
             'Total FTE': total_fte,
             'Enrollment Per': f"{enrollment_per}%" if enrollment_per != '' else '',
-            'Generated FTE': f"{adjusted_fte:.2f}"
+            'Generated FTE': adjusted_fte
         })
 
         course_total_fte += adjusted_fte
@@ -264,7 +264,7 @@ def format_fte_output(raw_df, original_fte_total, generated_fte_total):
     for _, row in raw_df.iterrows():
         formatted_row = row.copy()
         if isinstance(row['Generated FTE'], (float, int)):
-            formatted_row['Generated FTE'] = "${:,.3f}".format(row['Generated FTE'])
+            formatted_row['Generated FTE'] = "${:,.2f}".format(row['Generated FTE'])
         formatted_rows.append(formatted_row)
 
     df = pd.DataFrame(formatted_rows)
