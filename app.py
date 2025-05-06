@@ -173,7 +173,7 @@ elif choice == "FTE by Division":
             format_df = format_df.sort_values(by='Generated FTE Float', ascending=False)
 
             # set index
-            format.index = range(1, len(format_df) + 1)
+            format_df.index = range(1, len(format_df) + 1)
 
             # make a copy for plot
             plot_df = format_df
