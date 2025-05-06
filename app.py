@@ -161,6 +161,8 @@ elif choice == "FTE by Division":
             ax.set_xlabel("Section Name")
             ax.set_ylabel("Total FTE")
 
+            st.pyplot(fig)
+
             # Save button
             save_report(report_df, f"{division_input}_FTE_Report.xlsx")
 
