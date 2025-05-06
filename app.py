@@ -187,7 +187,7 @@ elif choice == "FTE by Division":
             # Create Plot
             fig, ax = plt.subplots()
             sns.barplot(data=plot_df.head(10), x='Sec Name', y='Generated FTE Float', ax=ax)
-            ax.set_title(f"Top 10 Sections by Total FTE in {division_input}")
+            ax.set_title(f"Top 10 Sections by Generated FTE in {division_input}")
             ax.set_xlabel("Section Name")
             ax.set_ylabel("Generated FTE ($)")
             ax.tick_params(axis='x', rotation=45)
