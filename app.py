@@ -161,17 +161,32 @@ elif choice == "FTE by Division":
             report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
 
             # Format Dataframe
-            plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
-            plot_df = plot_df.iloc[:, 2:]
-            plot_df = plot_df.sort_values(by='Generated FTE', ascending=True)
-            plot_df.index = range(1, len(plot_df) + 1)
+            format_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
+            format_df = format_df.iloc[:, 2:]
+
+            # add generated fte float at end(remove money sign, commas)
+            format_df['Generated FTE Float'] = format_df['Generated FTE']\
+            .str.replace('[\$,]', '', regex=True)\
+            .astype(float)
+
+            # sort by gen fte float
+            format_df = format.sort_values(by='Generated FTE Float', ascending=False)
+
+            # set index
+            format.index = range(1, len(format_df) + 1)
+
+            # make a copy for plot
+            plot_df = format_df
+
+            # drop gen fte float
+            format_df = format_df.iloc[:, :-1]
 
             # Display Dataframe
-            st.dataframe(plot_df.head(10))
+            st.dataframe(format_df.head(10))
 
             # Create Plot
             fig, ax = plt.subplots()
-            sns.barplot(data=plot_df.head(10), x='Sec Name', y='Generated FTE', ax=ax)
+            sns.barplot(data=plot_df.head(10), x='Sec Name', y='Generated FTE Float', ax=ax)
             ax.set_title(f"Top 10 Sections by Total FTE in {division_input}")
             ax.set_xlabel("Section Name")
             ax.set_ylabel("Generated FTE ($)")
