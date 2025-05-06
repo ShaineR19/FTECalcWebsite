@@ -23,6 +23,8 @@ import streamlit as st
 import pandas as pd
 import web_functions as wf
 import options4 as opfour
+import seaborn
+import matplotlib.pyplot as plt
 
 
 @st.cache_data
@@ -33,7 +35,7 @@ def load_data():
     Returns
     -------
     tuple(pd.DataFrame, pd.DataFrame, pd.DataFrame)
-        - dean_df: Full section-level dataset
+        - dean_df: Full dataset
         - unique_df: Dataset with unique course sections
         - fte_tier: Tier mapping for FTE generation
     """
@@ -151,10 +153,12 @@ elif choice == "FTE by Division":
             # Display Dataframe
             st.dataframe(plot_df.head(10))
 
-            # Format for plot
-
             # Display Plot
-            st.bar_chart(plot_df.set_index('Sec Name')['Total FTE'].head(10))
+            #st.bar_chart(plot_df.set_index('Sec Name')['Total FTE'].head(10))
+            sns.barplot(data=plot_df.head(10), x='Sec Name', y='Total FTE', ax=ax)
+            ax.set_title(f"Top 10 Sections by Total FTE in {division_input}")
+            ax.set_xlabel("Section Name")
+            ax.set_ylabel("Total FTE")
 
             # Save button
             save_report(report_df, f"{division_input}_FTE_Report.xlsx")
