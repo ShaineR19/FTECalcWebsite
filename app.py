@@ -76,7 +76,7 @@ def save_report(df_full, filename, image=None):
 
             workbook = writer.book
             worksheet = writer.sheets['Full Report']
-            
+
             # Auto-size each column based on content
             for i, column in enumerate(df_full.columns):
                 # Get max length of data and column name
@@ -188,7 +188,7 @@ elif choice == "FTE by Division":
             # Save button
             save_report(report_df, f"{division_input}_FTE_Report.xlsx", image = img_bytes)
 
-            st.info(f"Total FTE: {orig_total:.2f}")
+            st.info(f"Total FTE: {orig_total:.3f}")
             st.info(f"Generated FTE: ${gen_total:,.2f}")
     else:
         st.info("Division data not available.")
