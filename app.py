@@ -163,7 +163,7 @@ elif choice == "FTE by Division":
             # Format Dataframe
             plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
             plot_df = plot_df.iloc[:, 2:]
-            plot_df = plot_df.sort_values(by='Generated FTE', ascending=False)
+            plot_df = plot_df.sort_values(by='Generated FTE', ascending=True)
             plot_df.index = range(1, len(plot_df) + 1)
 
             # Display Dataframe
