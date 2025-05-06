@@ -179,7 +179,7 @@ elif choice == "FTE by Division":
             plot_df = format_df
 
             # drop gen fte float
-            format_df = format_df.iloc[:, :-1]
+            #format_df = format_df.iloc[:, :-1]
 
             # Display Dataframe
             st.dataframe(format_df.head(10))
