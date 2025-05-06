@@ -160,7 +160,7 @@ elif choice == "FTE by Division":
             ax.set_title(f"Top 10 Sections by Total FTE in {division_input}")
             ax.set_xlabel("Section Name")
             ax.set_ylabel("Total FTE")
-            ax.tick_params(axis='x', rotation=45)
+            ax.tick_params(axis='x', rotation=90)
 
             st.pyplot(fig)
 
