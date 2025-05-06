@@ -163,7 +163,7 @@ elif choice == "FTE by Division":
             # Format Dataframe
             plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
             plot_df = plot_df.iloc[:, 2:]
-            plot_df = plot_df.sort_values(by='Total FTE', ascending=False)
+            plot_df = plot_df.sort_values(by='Generated FTE', ascending=False)
             plot_df.index = range(1, len(plot_df) + 1)
 
             # Display Dataframe
@@ -171,10 +171,10 @@ elif choice == "FTE by Division":
 
             # Create Plot
             fig, ax = plt.subplots()
-            sns.barplot(data=plot_df.head(10), x='Sec Name', y='Total FTE', ax=ax)
+            sns.barplot(data=plot_df.head(10), x='Sec Name', y='Generated FTE', ax=ax)
             ax.set_title(f"Top 10 Sections by Total FTE in {division_input}")
             ax.set_xlabel("Section Name")
-            ax.set_ylabel("Total FTE")
+            ax.set_ylabel("Generated FTE ($)")
             ax.tick_params(axis='x', rotation=45)
             
             # Display Plot
@@ -262,7 +262,7 @@ elif choice == "FTE per Course":
                 save_report(df_result, f"{course_name}_FTE_Report.xlsx")
 
                 # Display Info to user
-                st.info(f"Original Total FTE: {original_fte:.2f}")
+                st.info(f"Original Total FTE: {original_fte:.3f}")
                 st.info(f"Generated FTE: ${generated_fte:,.2f}")
             else:
                 st.warning("Course not found.")
