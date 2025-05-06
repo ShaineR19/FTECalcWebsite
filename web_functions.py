@@ -211,7 +211,7 @@ def fte_by_div_raw(file_in, fte_tier, div_code):
             'Sec Faculty Info': row['Sec Faculty Info'],
             'Total FTE': total_fte,
             'Enrollment Per': f"{enrollment_per}%" if enrollment_per != '' else '',
-            'Generated FTE': adjusted_fte
+            'Generated FTE': f"{adjusted_fte:.2f}"
         })
 
         course_total_fte += adjusted_fte

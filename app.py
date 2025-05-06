@@ -203,8 +203,8 @@ elif choice == "FTE by Division":
             # Save button
             save_report(report_df, f"{division_input}_FTE_Report.xlsx", image = img_bytes)
 
-            st.info(f"Total FTE: {orig_total:.3f}")
-            st.info(f"Generated FTE: ${gen_total:,.2f}")
+            st.info(f"Total FTE for {division_input}: {orig_total:.3f}")
+            st.info(f"Generated FTE for {division_input}: ${gen_total:,.2f}")
     else:
         st.info("Division data not available.")
 
