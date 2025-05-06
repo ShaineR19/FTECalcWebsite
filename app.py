@@ -170,7 +170,7 @@ elif choice == "FTE by Division":
             .astype(float)
 
             # sort by gen fte float
-            format_df = format.sort_values(by='Generated FTE Float', ascending=False)
+            format_df = format_df.sort_values(by='Generated FTE Float', ascending=False)
 
             # set index
             format.index = range(1, len(format_df) + 1)
