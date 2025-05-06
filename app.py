@@ -74,6 +74,18 @@ def save_report(df_full, filename, image=None):
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             df_full.to_excel(writer, sheet_name='Full Report', index=False)
 
+            workbook = writer.book
+            worksheet = writer.sheets['Full Report']
+            
+            # Auto-size each column based on content
+            for i, column in enumerate(df_full.columns):
+                # Get max length of data and column name
+                col_len = max(
+                    df_full[column].astype(str).map(len).max(),
+                    len(column)
+                )
+                worksheet.set_column(i, i, col_len + 2)  # +2 for padding
+
             if image:
                 workbook = writer.book
                 chart_sheet = workbook.add_worksheet("Graph Report")
