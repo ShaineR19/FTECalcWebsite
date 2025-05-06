@@ -155,6 +155,7 @@ elif choice == "FTE by Division":
 
             # Display Plot
             #st.bar_chart(plot_df.set_index('Sec Name')['Total FTE'].head(10))
+            fig, ax = plt.subplots()
             sns.barplot(data=plot_df.head(10), x='Sec Name', y='Total FTE', ax=ax)
             ax.set_title(f"Top 10 Sections by Total FTE in {division_input}")
             ax.set_xlabel("Section Name")
