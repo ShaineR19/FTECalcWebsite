@@ -160,7 +160,6 @@ elif choice == "FTE by Division":
             # Create Plot
             fig, ax = plt.subplots()
             sns.barplot(data=plot_df.head(10), x='Sec Name', y='Total FTE', ax=ax)
-            sns.set_theme(style="darkgrid")
             ax.set_title(f"Top 10 Sections by Total FTE in {division_input}")
             ax.set_xlabel("Section Name")
             ax.set_ylabel("Total FTE")
@@ -170,10 +169,12 @@ elif choice == "FTE by Division":
             st.pyplot(fig)
 
             # Save Plot as a png
-            image = plt.savefig(f"{division_input}_plot.png")
+            img_bytes = io.BytesIO()
+            fig.savefig(img_bytes, format='png', bbox_inches='tight')
+            img_bytes.seek(0)
 
             # Save button
-            save_report(report_df, image, f"{division_input}_FTE_Report.xlsx")
+            save_report(report_df, f"{division_input}_FTE_Report.xlsx", image = img_bytes)
 
             st.info(f"Total FTE: {orig_total:.2f}")
             st.info(f"Generated FTE: ${gen_total:,.2f}")
