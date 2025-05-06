@@ -51,7 +51,7 @@ def load_data():
 dean_df, unique_df, fte_tier = load_data()
 
 
-def save_report(df_full, filename):
+def save_report(df_full, filename, image=None):
     """
     Prompts the user to name and download an Excel report.
 
@@ -59,6 +59,8 @@ def save_report(df_full, filename):
     ----------
     df_full : pd.DataFrame
         The DataFrame to export.
+    fig : png
+        png of plot to export
     filename : str
         Suggested default filename for the export.
     """
@@ -72,7 +74,13 @@ def save_report(df_full, filename):
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             df_full.to_excel(writer, sheet_name='Full Report', index=False)
 
-        st.download_button("Save Report", output.getvalue(),
+            if image:
+                workbook = writer.book
+                chart_sheet = workbook.add_worksheet("Chart")
+                writer.sheets["Chart"] = chart_sheet
+                chart_sheet.insert_image('B2', image)
+
+        st.download_button("Save Report", data=output.getvalue(),
                            file_name=user_filename)
 
 
@@ -140,32 +148,32 @@ elif choice == "FTE by Division":
 
             report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
 
-            # find top 10 in data frame
-            # sort dataframe by top 10 the reset index
-            # use .head(10) to display top 10
+            # Format Dataframe
             plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
             plot_df = plot_df.iloc[:, 2:]
             plot_df = plot_df.sort_values(by='Total FTE', ascending=False)
-
-            # Format Dataframe
             plot_df.index = range(1, len(plot_df) + 1)
 
             # Display Dataframe
             st.dataframe(plot_df.head(10))
 
-            # Display Plot
-            #st.bar_chart(plot_df.set_index('Sec Name')['Total FTE'].head(10))
+            # Create Plot
             fig, ax = plt.subplots()
             sns.barplot(data=plot_df.head(10), x='Sec Name', y='Total FTE', ax=ax)
+            sns.set_theme(style="darkgrid")
             ax.set_title(f"Top 10 Sections by Total FTE in {division_input}")
             ax.set_xlabel("Section Name")
             ax.set_ylabel("Total FTE")
             ax.tick_params(axis='x', rotation=45)
-
+            
+            # Display Plot
             st.pyplot(fig)
 
+            # Save Plot as a png
+            image = plt.savefig(f"{division_input}_plot.png")
+
             # Save button
-            save_report(report_df, f"{division_input}_FTE_Report.xlsx")
+            save_report(report_df, image, f"{division_input}_FTE_Report.xlsx")
 
             st.info(f"Total FTE: {orig_total:.2f}")
             st.info(f"Generated FTE: ${gen_total:,.2f}")
