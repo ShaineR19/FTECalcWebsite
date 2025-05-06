@@ -76,7 +76,7 @@ def save_report(df_full, filename, image=None):
 
             if image:
                 workbook = writer.book
-                chart_sheet = workbook.add_worksheet("Chart")
+                chart_sheet = workbook.add_worksheet("Graph Report")
                 writer.sheets["Graph Report"] = chart_sheet
                 chart_sheet.insert_image('A1', image)
 
