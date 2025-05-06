@@ -23,7 +23,7 @@ import streamlit as st
 import pandas as pd
 import web_functions as wf
 import options4 as opfour
-import seaborn
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 
