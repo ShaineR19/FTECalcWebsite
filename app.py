@@ -222,7 +222,7 @@ elif choice == "FTE per Instructor":
                 # Format dataframe
                 # fill N/A spaces with blanks
                 report_df = raw_df.fillna("")
-                report_df = report_df[~report_df['Sec Name'].isin(['Total'])].copy()
+                report_df = report_df[~report_df['Sec Name'].isin(['TOTAL'])].copy()
                 # add gen fte float
                 report_df['Generated FTE Float'] = report_df['Generated FTE']\
                                         .str.replace('[\$,]', '', regex=True)\
