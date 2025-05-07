@@ -423,16 +423,12 @@ elif choice == "Sec Division Report":
         
 elif choice == "Course Enrollment Percentage":
     st.header("Course Enrollment Percentage")
-
     if 'Sec Name' in dean_df.columns and 'Course Code' in dean_df.columns:
         valid_courses = sorted(dean_df['Course Code'].dropna().unique())
         course = st.selectbox("Select Course", options=["--"] + list(valid_courses))
-
         run = st.button("Run Report")
-
         if course != "--" and run:
             filtered = dean_df[dean_df['Course Code'] == course].drop_duplicates(subset="Sec Name").copy()
-
             def calc_enrollment(row):
                 try:
                     cap = float(row["Capacity"])
@@ -442,22 +438,17 @@ elif choice == "Course Enrollment Percentage":
                     return (fte / cap) * 100
                 except (ValueError, TypeError, ZeroDivisionError):
                     return None
-
             filtered["Enrollment Percentage"] = filtered.apply(calc_enrollment, axis=1)
-
             # Format for display
             display_df = filtered.copy()
             display_df["Enrollment Percentage"] = display_df["Enrollment Percentage"].apply(
                 lambda x: f"{x:.2f}%" if isinstance(x, (float, int)) else "N/A"
             )
-
             st.dataframe(display_df)
-
             # Top 10 bar chart
             chart_data = filtered[["Sec Name", "Enrollment Percentage"]].dropna().sort_values(
                 by="Enrollment Percentage", ascending=False
             ).head(10)
-
             if not chart_data.empty:
                 fig, ax = plt.subplots(figsize=(10, 5))
                 ax.bar(chart_data["Sec Name"], chart_data["Enrollment Percentage"])
@@ -465,21 +456,40 @@ elif choice == "Course Enrollment Percentage":
                 ax.set_xlabel("Section Name")
                 ax.set_title(f"Top {len(chart_data)} Sections by Enrollment %")
                 ax.tick_params(axis='x', rotation=45)
+                plt.tight_layout()  # Add this to fix layout issues
                 st.pyplot(fig)
-
-            # ✅ Optional download section
-            # ✅ Download Button
+            
+            # Download section - Fixed
             if st.button(f"📥 Download Report for {course}"):
+                # Create a temporary file in a location that Streamlit can write to
                 safe_course = course.replace(" ", "_").lower()
-                filename = f"{safe_course}_per.xlsx"
-                filtered.to_excel(filename, index=False)
-
+                filename = f"{safe_course}_enrollment_percentage.xlsx"
+                temp_path = os.path.join(tempfile.gettempdir(), filename)
+                
+                # Save the dataframe to Excel
+                filtered.to_excel(temp_path, index=False)
+                
+                # Use your existing auto_format_excel function
                 try:
-                    fn.auto_format_excel(filename)
-                    st.success(f"Saved and formatted file: {filename}")
+                    auto_format_excel(temp_path)
+                    st.success(f"File formatted successfully")
                 except Exception as e:
-                    st.warning(f"Saved without formatting: {filename} – {e}")
-
+                    st.warning(f"Could not format Excel file: {str(e)}")
+                
+                # Read the formatted file for download
+                with open(temp_path, "rb") as file:
+                    file_data = file.read()
+                
+                # Create download button with the formatted file
+                st.download_button(
+                    label=f"💾 Click here to download {filename}",
+                    data=file_data,
+                    file_name=filename,
+                    mime="application/vnd.ms-excel"
+                )
+                
+                st.success(f"Report for {course} is ready for download!")
+        
         elif run and course == "--":
             st.warning("Please select a valid course.")
     else:
