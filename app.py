@@ -537,7 +537,7 @@ elif choice == "FTE by Division":
                     plot_df.index = range(1, len(plot_df) + 1)
 
                     # Show table
-                    st.dataframe(report_df)
+                    st.dataframe(plot_df)
 
                     # Plot chart
                     fig, ax = plt.subplots(figsize=(10, 6))
