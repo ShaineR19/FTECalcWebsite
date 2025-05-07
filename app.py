@@ -725,7 +725,7 @@ elif choice == "FTE per Course":
 
                 # Clean and sort data
                 plot_df = df_result[df_result['Sec Name'] != 'COURSE TOTAL'].copy()
-                st.dataframe(df_result)
+                st.dataframe(plot_df)
 
                 # Clean for Plot
                 plot_df['Generated FTE'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
