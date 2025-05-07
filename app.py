@@ -539,7 +539,7 @@ elif choice == "FTE by Division":
                     frame_df = frame_df.iloc[:, :-1]
                     
                     # Display Dataframe
-                    st.dataframe(frame_df)
+                    st.dataframe(frame_df.head(10))
 
                     # Plot chart
                     fig, ax = plt.subplots(figsize=(10, 6))
