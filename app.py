@@ -199,10 +199,9 @@ if not st.session_state.file_uploaded:
             if uploaded_file.name.endswith('.csv'):
                 test_df = pd.read_csv(uploaded_file)
                 
-            else:
+            elif uploaded_file.name.endswith('.xlsx'):
                 test_df = pd.read_excel(uploaded_file)
 
-                
             if "Sec Name" not in test_df.columns:
                 st.error("The uploaded file appears to be missing required columns (Sec Name). Please check the file format.")
             else:
