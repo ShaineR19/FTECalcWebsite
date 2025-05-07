@@ -530,15 +530,11 @@ elif choice == "FTE by Division":
                     # Format and filter top sections
                     plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
                     plot_df = plot_df.iloc[:, 2:]
-                    plot_df['Generated FTE'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
-                    plot_df = plot_df.sort_values(by='Generated FTE', ascending=False)
-                    if len(plot_df) > 10:
-                        plot_df = plot_df.head(10)
+                    plot_df['Generated FTE Float'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
+                    plot_df = plot_df.sort_values(by='Generated FTE Float', ascending=False)
                     plot_df.index = range(1, len(plot_df) + 1)
 
                     # Show table
-                    frame_df = plot_df
-                    frame_df['Generated FTE'] = plot_df['Generated FTE'].apply(lambda x: f"${x:,.2f}")
                     st.dataframe(frame_df)
 
                     # Plot chart
