@@ -158,9 +158,8 @@ elif choice == "FTE by Division":
         if run:
             raw_df, orig_total, gen_total = wf.fte_by_div_raw(dean_df, fte_tier, division_input)
 
-            report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
-
             # Format Dataframe
+            report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
             format_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
             format_df = format_df.iloc[:, 2:]
 
@@ -216,18 +215,26 @@ elif choice == "FTE per Instructor":
 
         run = st.button("Run Report")
         if run:
-            report_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(
-                dean_df, fte_tier, instructor)
+            report_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(dean_df, fte_tier, instructor)
 
             report_df = report_df.fillna("")
 
             if report_df is not None:
                 # Format dataframe
-                report_df.index = range(1, len(report_df) + 1)
+                format_df = report_df[~report_df['Sec Name'].isin(['Total'])].copy()
+                format_df.index = range(1, len(report_df) + 1)
 
                 # Display dataframe
-                st.dataframe(report_df)
+                st.dataframe(format_df)
 
+                # add gen fte float
+                format_df['Generated FTE Float'] = format_df['Generated FTE']\
+            .str.replace('[\$,]', '', regex=True)\
+            .astype(float)
+                # sort by gen fte
+                # display plot 
+                # save plot as fig
+                # save button
                 # Format dataframe for plot
                 report_df = report_df.sort_values(by='Total FTE',
                                                   ascending=False)
