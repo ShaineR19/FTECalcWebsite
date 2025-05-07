@@ -30,6 +30,13 @@ import pandas as pd
 import options4 as opfour
 from options4 import remove_duplicate_sections, calculate_enrollment_percentage, generate_fte
 import re
+# import xlsxwriter
+from openpyxl import load_workbook
+from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.styles import Font, Border, Side, PatternFill
+
+# import openpyxl
+from openpyxl.utils import get_column_letter
 
 
 # def readfile():
@@ -88,6 +95,54 @@ import re
 #         groups = []
 #         print("File Missing!")
 #         return groups
+def auto_format_excel(filename):
+    try:
+        wb = load_workbook(filename)
+        ws = wb.active
+        assert isinstance(ws, Worksheet)
+
+        for column in ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                if cell.value is not None:
+                    max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[column_letter].width = max_length + 2
+
+        wb.save(filename)
+        print(f"Formatted {filename} with auto-adjusted column widths")
+
+    except Exception as err:
+        print(f"Error formatting Excel file: {str(err)}")
+
+
+def process_sec_divisions(file_in):
+    print("\nAvailable Sec Divisions:\n")
+    sec_group = sorted(file_in["Sec Divisions"].dropna().unique())
+    for i in range(0, len(sec_group), 4):
+        print(" ".join(f"-{x}" for x in sec_group[i:i + 4]))
+
+    sec_input = input("\nEnter Sec Divisions separated by commas or 'ALL': ").upper().strip()
+    divisions_to_process = sec_group if sec_input == "ALL" else [div.strip() for div in sec_input.split(",")]
+
+    invalid_codes = [div for div in divisions_to_process if div not in sec_group]
+    if invalid_codes:
+        print(f"Invalid Sec Division(s): {', '.join(invalid_codes)}")
+        return
+
+    save_choice = input("Valid divisions found. Save report? (Y/N): ").strip().upper()
+    if save_choice == 'Y':
+        filename = save_report(file_in, divisions_to_process)
+        auto_format_excel(filename)
+    else:
+        print("Report not saved.")
+
+def save_report(df, divisions):
+    filename = "sec_division_report.xlsx"
+    filtered = df[df["Sec Divisions"].isin(divisions)]
+    filtered.to_excel(filename, index=False)
+    print(f"Report saved to {filename}")
+    return filename
 
 def generate_faculty_fte_report(dean_df, fte_tier, faculty_name):
     """
