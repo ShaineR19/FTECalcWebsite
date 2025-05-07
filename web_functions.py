@@ -30,7 +30,7 @@ import pandas as pd
 import options4 as opfour
 from options4 import remove_duplicate_sections, calculate_enrollment_percentage, generate_fte
 import re
-# import xlsxwriter
+import xlsxwriter.utility
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles import Font, Border, Side, PatternFill
@@ -622,8 +622,11 @@ def save_faculty_excel(data, instructor_name):
         worksheet.write(total_row, 0, "TOTAL", total_format)
 
         if "Total FTE" in data.columns:
-            worksheet.write_formula(total_row, data.columns.get_loc("Total FTE"),
-                                    f'=SUM(H2:H{total_row})', total_format)
+            col_index = data.columns.get_loc("Total FTE")
+            col_letter = xlsxwriter.utility.xl_col_to_name(col_index)
+            worksheet.write_formula(total_row, col_index,
+                            f'=SUM({col_letter}2:{col_letter}{total_row - 1})',
+                            total_format)
 
         if "Generated FTE" in data.columns:
             col_index = data.columns.get_loc("Generated FTE")
