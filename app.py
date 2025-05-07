@@ -640,7 +640,7 @@ elif choice == "FTE per Instructor":
                  "Total FTE": final_total_fte,
                  "Sec Divisions": "",
                  "Generated FTE": final_total_gen
-             })
+                 })
 
             # Convert to DataFrame
             df_display = pd.DataFrame(display_rows)
