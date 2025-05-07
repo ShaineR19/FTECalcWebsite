@@ -532,13 +532,14 @@ elif choice == "FTE by Division":
                     plot_df = plot_df.iloc[:, 2:]
                     plot_df['Generated FTE'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
                     plot_df = plot_df.sort_values(by='Generated FTE', ascending=False)
-                    plot_df['Generated FTE'] = plot_df['Generated FTE'].apply(lambda x: f"${x:,.2f}")
                     if len(plot_df) > 10:
                         plot_df = plot_df.head(10)
                     plot_df.index = range(1, len(plot_df) + 1)
 
                     # Show table
-                    st.dataframe(plot_df)
+                    #frame_df = plot_df
+                    frame_df['Generated FTE'] = plot_df['Generated FTE'].apply(lambda x: f"${x:,.2f}")
+                    st.dataframe(frame_df)
 
                     # Plot chart
                     fig, ax = plt.subplots(figsize=(10, 6))
