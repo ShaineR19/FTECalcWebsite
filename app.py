@@ -537,7 +537,7 @@ elif choice == "FTE by Division":
                     plot_df.index = range(1, len(plot_df) + 1)
 
                     # Show table
-                    #frame_df = plot_df
+                    frame_df = plot_df
                     frame_df['Generated FTE'] = plot_df['Generated FTE'].apply(lambda x: f"${x:,.2f}")
                     st.dataframe(frame_df)
 
