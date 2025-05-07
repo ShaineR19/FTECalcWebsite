@@ -222,26 +222,26 @@ elif choice == "FTE per Instructor":
                 # Format dataframe
                 report_df = report_df.fillna("")
                 report_df = report_df[~report_df['Sec Name'].isin(['Total'])].copy()
-                format_df.index = range(1, len(report_df) + 1)
+                report_df.index = range(1, len(report_df) + 1)
 
                 # Display dataframe
-                st.dataframe(format_df)
+                st.dataframe(report_df)
 
                 # add gen fte float
-                format_df['Generated FTE Float'] = format_df['Generated FTE']\
+                report_df['Generated FTE Float'] = report_df['Generated FTE']\
                                         .str.replace('[\$,]', '', regex=True)\
                                         .astype(float)
                 # sort by gen fte
-                # display plot 
-                # save plot as fig
-                # save button
-                # Format dataframe for plot
-                format_df = format_df.sort_values(by='General FTE Float',
+
+                report_df = report_df.sort_values(by='General FTE Float',
                                                   ascending=False)
 
+                # Display dataframe
+                st.dataframe(report_df)
+                
                 # Create Plot
                 fig, ax = plt.subplots()
-                sns.barplot(data=plot_df, x='Sec Name', y='Generated FTE Float', ax=ax)
+                sns.barplot(data=report_df, x='Sec Name', y='Generated FTE Float', ax=ax)
                 ax.set_title(f"Generated FTE per Section for {instructor}")
                 ax.set_xlabel("Section Name")
                 ax.set_ylabel("Generated FTE ($)")
