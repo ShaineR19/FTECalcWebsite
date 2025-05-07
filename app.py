@@ -232,7 +232,7 @@ uploaded_file.seek(0)
 # Process the uploaded file and merge with reference data
 try:
     # Read the uploaded file (deanDailyCsar)
-    if uploaded_file.type == 'text/csv':
+    if uploaded_file.name.endswith('.csv'):
         file_in = pd.read_csv(uploaded_file)
     else:
         file_in = pd.read_excel(uploaded_file)
