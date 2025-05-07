@@ -744,16 +744,24 @@ elif choice == "FTE per Course":
 
                 # Create and flip the chart
                 fig, ax = plt.subplots(figsize=(10, 6))
-                sns.barplot(data=plot_df.head(10), x='Sec Name', y='Generated FTE Float', ax=ax, palette='Blues_r')
-                sns.set_style("dark")
+                sns.barplot(data=plot_df.head(10), 
+                x='Sec Name', 
+                y='Generated FTE Float', 
+                ax=ax, palette='Blues_r'
+                )
+
                 # Label and style
-                ax.set_title(f"Top 10 Sections by Generated FTE for Course {course_name}")
+                ax.set_title(f"Top 10 Sections by Generated FTE for Course {course_name}", fontsize=16, weight='bold')
                 ax.set_xlabel("Section Name")
                 ax.set_ylabel("Generated FTE ($)")
-                ax.tick_params(axis='x', rotation=45)
-                plt.tight_layout()
+                ax.tick_params(axis='y', label_size =10)
+                # Data Labels
+                for container in ax.containers:
+                    ax.bar_label(container, fmt='${:,.2f}', padding=5, fontsize=10, color='black')
 
                 # Show chart and save for Excel
+                sns.despine(ax=ax, left=True, bottom=True)
+                plt.tight_layout()
                 st.pyplot(fig)
 
                 # Save Plot as a png
