@@ -228,10 +228,6 @@ elif choice == "FTE per Instructor":
                 report_df['Generated FTE Float'] = report_df['Generated FTE']\
                                         .str.replace('[\$,]', '', regex=True)\
                                         .astype(float)
-                # sort by gen fte
-
-                report_df = report_df.sort_values(by='General FTE Float',
-                                                  ascending=False)
 
                 # Display dataframe
                 st.dataframe(report_df)
