@@ -228,6 +228,10 @@ elif choice == "FTE per Instructor":
                 report_df['Generated FTE Float'] = report_df['Generated FTE']\
                                         .str.replace('[\$,]', '', regex=True)\
                                         .astype(float)
+                
+                # sort by generated fte total
+                report_df = report_df.sort_values(by='Generated FTE Float', ascending=False)
+                
                 # make copy of df for plot
                 plot_df = report_df
 
@@ -236,7 +240,6 @@ elif choice == "FTE per Instructor":
 
                 # Display dataframe
                 st.dataframe(report_df)
-
 
                 # Create Plot
                 fig, ax = plt.subplots()
