@@ -527,14 +527,18 @@ elif choice == "FTE by Division":
                 if raw_df is not None:
                     report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
 
-                    # Format and filter top sections
+                    # Format for both plot and dataframe
                     plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
                     plot_df = plot_df.iloc[:, 2:]
                     plot_df['Generated FTE Float'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
                     plot_df = plot_df.sort_values(by='Generated FTE Float', ascending=False)
                     plot_df.index = range(1, len(plot_df) + 1)
 
-                    # Show table
+                    # Format for Dataframe
+                    frame_df = plot_df.copy()
+                    frame_df = frame_df.iloc[:, -1:]
+                    
+                    # Display Dataframe
                     st.dataframe(frame_df)
 
                     # Plot chart
@@ -544,6 +548,8 @@ elif choice == "FTE by Division":
                     ax.set_xlabel("Section Name")
                     ax.set_ylabel("Generated FTE")
                     plt.xticks(rotation=45, ha='right')
+
+                    # Display Plot
                     st.pyplot(fig)
 
                     # Save plot to image
@@ -554,7 +560,6 @@ elif choice == "FTE by Division":
                     # Save Excel + image
                     save_report(report_df, f"{div}_fte.xlsx", image=img_bytes)
                     
-
                     # Summary stats
                     st.info(f"Total FTE: {orig_total:.3f}")
                     st.info(f"Generated FTE: ${gen_total:,.2f}")
