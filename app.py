@@ -755,6 +755,7 @@ elif choice == "FTE per Course":
                 ax.set_xlabel("Section Name")
                 ax.set_ylabel("Generated FTE ($)")
                 ax.tick_params(axis='y', labelsize =10)
+                ax.tick_params(axis='x', rotation=45)
                 # Data Labels
                 for container in ax.containers:
                     ax.bar_label(container, fmt='${:,.2f}', padding=5, fontsize=10, color='black')
