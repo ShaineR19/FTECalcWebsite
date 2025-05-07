@@ -319,7 +319,7 @@ if choice == "Home":
     - **Course Enrollment Percentages**: Analyze enrollment rates across course sections
     - **FTE by Division**: Calculate FTE metrics for entire academic divisions
     - **FTE per Instructor**: Evaluate faculty teaching loads and generated FTE
-    - **FTE per Course**: Compare section performance within specific courses
+    - **FTE per Course**: Compare section performance within specific courses test
     
     
     """)
