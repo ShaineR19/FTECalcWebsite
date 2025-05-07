@@ -728,7 +728,7 @@ elif choice == "FTE per Course":
                 plot_df['Generated FTE Float'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
 
                 # Sort by Generated FTE Float
-                plot_data = plot_df.sort_values(by='Generated FTE Float', ascending=False)
+                plot_df = plot_df.sort_values(by='Generated FTE Float', ascending=False)
 
                 # Reset Index
                 plot_df.index = range(1, len(plot_df) + 1)
