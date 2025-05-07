@@ -608,9 +608,9 @@ def save_faculty_excel(data, instructor_name):
 
         # Format numeric columns
         for col_num, col_name in enumerate(data.columns):
-            if "FTE" in col_name and "Generated" in col_name:
+            if "Generated FTE" in col_name:
                 worksheet.set_column(col_num, col_num, 15, money_format)
-            elif "FTE" in col_name:
+            elif "Total FTE" in col_name:
                 worksheet.set_column(col_num, col_num, 12, number_format)
             elif col_name in ["Instructor", "Course Code", "Sec Name"]:
                 worksheet.set_column(col_num, col_num, 20)
