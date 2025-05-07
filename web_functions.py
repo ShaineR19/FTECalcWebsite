@@ -594,7 +594,7 @@ def save_faculty_excel(data, instructor_name):
         # Define formats
         header_format = workbook.add_format({"bold": True, "bg_color": "#D9E1F2", "border": 1})
         money_format = workbook.add_format({"num_format": "$#,##0.00"})
-        number_format = workbook.add_format({"num_format": "#,##0.0"})
+        number_format = workbook.add_format({"num_format": "#,##0.000"})
         total_format = workbook.add_format({"bold": True, "bg_color": "#E0E0E0", "border": 1})
 
         # Set custom header row
