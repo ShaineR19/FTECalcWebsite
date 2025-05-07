@@ -747,7 +747,7 @@ elif choice == "FTE per Course":
                 sns.barplot(data=plot_df.head(10), 
                 x='Sec Name', 
                 y='Generated FTE Float', 
-                ax=ax, palette='Greens_r'
+                ax=ax, palette='GnBu'
                 )
 
                 # Label and style
