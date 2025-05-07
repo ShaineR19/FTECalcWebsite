@@ -735,7 +735,7 @@ elif choice == "FTE per Course":
 
                 # Create a Dataframe for Display and remove Generated FTE Float
                 report_df = plot_df.copy()
-                report_df = report_df.drop(columns=['Generated FTE Float'])
+                #report_df = report_df.drop(columns=['Generated FTE Float'])
 
                 # Display Dataframe top 10
                 st.dataframe(report_df.head(10))
