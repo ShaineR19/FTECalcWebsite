@@ -761,8 +761,8 @@ elif choice == "FTE per Course":
                     ax.bar_label(container, fmt='${:,.2f}', padding=5, fontsize=10, color='black')
 
                 # Show chart and save for Excel
-                sns.despine(ax=ax, left=True, bottom=True)
-                #plt.tight_layout()
+                #sns.despine(ax=ax, left=True, bottom=True)
+                plt.tight_layout()
                 st.pyplot(fig)
 
                 # Save Plot as a png
