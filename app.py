@@ -215,24 +215,24 @@ elif choice == "FTE per Instructor":
 
         run = st.button("Run Report")
         if run:
-            report_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(dean_df, fte_tier, instructor)
-            report_df = report_df.fillna("")
+            raw_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(dean_df, fte_tier, instructor)
 
-            if report_df is not None:
+
+            if raw_df is not None:
                 # Format dataframe
-                report_df = report_df.fillna("")
+                # fill N/A spaces with blanks
+                report_df = raw_df.fillna("")
                 report_df = report_df[~report_df['Sec Name'].isin(['Total'])].copy()
-                report_df.index = range(1, len(report_df) + 1)
-
                 # add gen fte float
                 report_df['Generated FTE Float'] = report_df['Generated FTE']\
                                         .str.replace('[\$,]', '', regex=True)\
                                         .astype(float)
-                
                 # sort by generated fte total
                 report_df = report_df.sort_values(by='Generated FTE Float', ascending=False)
-                
-                # make copy of df for plot
+                # Ensure index is in order
+                report_df.index = range(1, len(report_df) + 1)
+
+                # make copy of df for plot with float gen fte
                 plot_df = report_df
 
                 # drop gen fte float
@@ -259,7 +259,7 @@ elif choice == "FTE per Instructor":
 
                 # Save Report
                 filename = opfour.clean_instructor_name(instructor)
-                save_report(report_df, filename, image=img_bytes)
+                save_report(raw_df, filename, image=img_bytes)
 
                 st.info(f"Total FTE: {orig_fte:.3f}")
                 st.info(f"Generated FTE: ${gen_fte:,.2f}")
