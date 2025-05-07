@@ -578,39 +578,22 @@ elif choice == "FTE per Instructor":
 
         run = st.button("Run Report")
         if run and instructor != "--":
-        
+
             report_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(dean_df, fte_tier, instructor)
 
             report_df = report_df.fillna("")
             report_df.index = range(1, len(report_df) + 1)
-            # Assume the last row contains totals
-            formatted_df = report_df.copy()
 
-            # Get index of the last row
-            last_row_index = formatted_df.index[-1]
+            # Remove existing total row
+            report_df = report_df[~report_df["Course Code"].astype(str).str.upper().eq("TOTAL")]
 
-            # List of columns that should be formatted as currency
-            currency_columns = ['Generated FTE']  
+            # Calculate grand totals
+            final_total_fte = report_df["Total FTE"].sum()
+            final_total_gen = report_df["Generated FTE"].sum()
 
-            # Format only the last row's 'Generated FTE' as currency
-            if 'Generated FTE' in formatted_df.columns:
-                try:
-                    value = float(formatted_df.at[last_row_index, 'Generated FTE'])
-                except (ValueError, TypeError):
-                    value = 0.0
-                formatted_df.at[last_row_index, 'Generated FTE'] = "${:,.2f}".format(value)
-
-            # Display in Streamlit
-            # Ensure numeric for summing
-            
-            report_df['Total FTE'] = pd.to_numeric(report_df['Total FTE'], errors='coerce').fillna(0)
-            report_df['Generated FTE'] = pd.to_numeric(report_df['Generated FTE'], errors='coerce').fillna(0)
-
-            # Build display list
+            # Build display rows
             display_rows = []
-            prev_course = None
             first_row = True
-
             for course, group in report_df.groupby("Course Code"):
                 show_course = True
                 course_total_fte = group['Total FTE'].sum()
@@ -625,18 +608,16 @@ elif choice == "FTE per Instructor":
                         "Meeting Times": row.get("Meeting Times", ""),
                         "Capacity": row.get("Capacity", ""),
                         "FTE Count": row.get("FTE Count", ""),
-                        "Total FTE": row.get("Total FTE", ""),
+                        "Total FTE": row.get("Total FTE", 0),
                         "Sec Divisions": row.get("Sec Divisions", ""),
-                        "Generated FTE": f"${row.get('Generated FTE', 0):,.2f}"
+                        "Generated FTE": row.get("Generated FTE", 0)
                     })
                     first_row = False
-                    show_course = False  # Only show Course Code once
+                    show_course = False
 
-                # Add subtotal row
-                # Add subtotal row (no course code shown)
                 display_rows.append({
                     "Instructor": "",
-                    "Course Code": "",  # leave blank
+                    "Course Code": "",
                     "Sec Name": "SUBTOTAL",
                     "X Sec Delivery Method": "",
                     "Meeting Times": "",
@@ -644,38 +625,42 @@ elif choice == "FTE per Instructor":
                     "FTE Count": "",
                     "Total FTE": course_total_fte,
                     "Sec Divisions": "",
-                    "Generated FTE": f"${course_gen_fte:,.2f}"
+                    "Generated FTE": course_gen_fte
                 })
 
-            # Add final total
-            final_total_fte = report_df["Total FTE"].sum()
-            final_total_gen = report_df["Generated FTE"].sum()
+            # # Append grand total row
+            # display_rows.append({
+            #     "Instructor": "",
+            #     "Course Code": "",
+            #     "Sec Name": "TOTAL",
+            #     "X Sec Delivery Method": "",
+            #     "Meeting Times": "",
+            #     "Capacity": "",
+            #     "FTE Count": "",
+            #     "Total FTE": final_total_fte,
+            #     "Sec Divisions": "",
+            #     "Generated FTE": final_total_gen
+            # })
 
-            display_rows.append({
-                "Instructor": "",
-                "Course Code": "",
-                "Sec Name": "TOTAL",
-                "X Sec Delivery Method": "",
-                "Meeting Times": "",
-                "Capacity": "",
-                "FTE Count": "",
-                "Total FTE": final_total_fte,
-                "Sec Divisions": "",
-                "Generated FTE": f"${final_total_gen:,.2f}"
-            })
-
-            # Convert to DataFrame and display
+            # Convert to DataFrame
             df_display = pd.DataFrame(display_rows)
             df_display.index = range(1, len(df_display) + 1)
+
+            # Convert numeric columns
+            for col in ['Capacity', 'FTE Count', 'Total FTE', 'Generated FTE']:
+                df_display[col] = pd.to_numeric(df_display[col], errors='coerce').fillna(0)
+
+            # Format for display
+            df_display['Generated FTE'] = df_display['Generated FTE'].apply(lambda x: f"${x:,.2f}")
+            df_display['Total FTE'] = df_display['Total FTE'].apply(lambda x: f"{x:.3f}")
+            df_display['Capacity'] = df_display['Capacity'].astype(int)
+
+            # Show table
             st.dataframe(df_display)
 
-
+            # Plot
             plot_df = report_df.copy()
-
-            # Convert and clean
             plot_df['Sec Name'] = plot_df['Sec Name'].astype(str).str.strip()
-
-            # Filter out blanks, TOTAL, SUBTOTAL
             plot_df = plot_df[
                 (plot_df['Sec Name'] != "") &
                 (~plot_df['Sec Name'].str.upper().isin(['TOTAL', 'SUBTOTAL']))
@@ -684,9 +669,7 @@ elif choice == "FTE per Instructor":
 
             fig, ax = plt.subplots(figsize=(10, 6))
             top_sections = plot_df.sort_values(by='Generated FTE', ascending=False).head(5)
-
             sns.barplot(data=top_sections, x='Sec Name', y='Generated FTE', ax=ax)
-
             ax.set_title(f"Top 5 Sections by Generated FTE for {instructor}")
             ax.set_ylabel("Generated FTE ($)")
             ax.set_xlabel("Section")
@@ -698,12 +681,12 @@ elif choice == "FTE per Instructor":
             fig.savefig(img_buffer, format='png', bbox_inches='tight')
             img_buffer.seek(0)
 
-            # ✅ ADD DOWNLOAD BUTTON HERE
+            # Download button
             excel_data = save_faculty_excel(report_df, instructor_name=instructor, chart_image=img_buffer)
             st.download_button("📥 Download Instructor Report",
                                data=excel_data,
-                               #file_name=f"{instructor.replace(' ', '_')}_FTE_Report.xlsx")
-                               file_name=opfour.clean_instructor_name(instructor)) 
+                               file_name=opfour.clean_instructor_name(instructor))
+
             # Info messages
             st.info(f"Total FTE: {orig_fte:.3f}")
             st.info(f"Generated FTE: ${gen_fte:,.2f}")
