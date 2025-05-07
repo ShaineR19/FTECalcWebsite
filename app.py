@@ -525,13 +525,14 @@ elif choice == "FTE by Division":
                 raw_df, orig_total, gen_total = wf.fte_by_div_raw(dean_df, fte_tier, div)
 
                 if raw_df is not None:
-                    report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
+                    plot_df = wf.format_fte_output(raw_df, orig_total, gen_total)
 
                     # Format and filter top sections
-                    plot_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
+                    plot_df = plot_df[~plot_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
                     plot_df = plot_df.iloc[:, 2:]
                     plot_df['Generated FTE'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
                     plot_df = plot_df.sort_values(by='Generated FTE', ascending=False)
+                    plot_df['Formatted FTE'] = plot_df['Generated FTE'].apply(lambda x: f"${x:,.2f}")
                     if len(plot_df) > 10:
                         plot_df = plot_df.head(10)
                     plot_df.index = range(1, len(plot_df) + 1)
