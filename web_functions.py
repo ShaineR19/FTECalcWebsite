@@ -25,43 +25,187 @@ Example:
     fte_df = wf.fte_by_div_raw(df, tier_df, 'ENG')
 """
 
-
+import io
 import pandas as pd
 import options4 as opfour
+from options4 import remove_duplicate_sections, calculate_enrollment_percentage, generate_fte
+import re
 
 
-def readfile():
+# def readfile():
+#     """
+#     Reads, merges, and processes course and FTE data from CSV and Excel sources
+
+#     This function:
+#     - Reads 'deanDailyCsar.csv' and 'unique_deansDailyCsar_FTE.xlsx'
+#     - Extracts 'Course Code' if missing
+#     - Merges contact hours into the main dataset
+#     - Computes total FTE per section
+
+#     Returns
+#     -------
+#     pd.DataFrame
+#         Cleaned and sorted merged dataset ready for FTE analysis,
+#         or an empty list if files are missing.
+#     """
+
+#     try:
+#         # reads the deansDailyCsar.csv and unique_deansDailyCsar_FTE files in to a dataframe
+#         file_in = pd.read_csv('deanDailyCsar.csv')
+#         fte_file_in = pd.read_excel('unique_deansDailyCsar_FTE.xlsx')
+
+#         # merge prior dataframes
+#         # Extract Course Code from Sec Name if not already done
+#         if "Course Code" not in file_in.columns:
+#             file_in["Course Code"] = file_in["Sec Name"].str.extract(r"([A-Z]{3}-\d{3})")
+
+#         # Also create Course Code in credits_df
+#         if "Course Code" not in fte_file_in.columns:
+#             fte_file_in["Course Code"] = fte_file_in["Sec Name"].str.extract(r"([A-Z]{3}-\d{3})")
+
+#         # Merge only needed columns from credits_df
+#         merged_df = pd.merge(
+#             file_in,
+#             fte_file_in[["Course Code", "Contact Hours"]],
+#             how='left',
+#             on='Course Code'
+#         )
+
+#         merged_df["Contact Hours"] = pd.to_numeric(merged_df["Contact Hours"], errors='coerce')
+#         merged_df["FTE Count"] = pd.to_numeric(merged_df["FTE Count"], errors='coerce')
+
+#         # Calculate Total FTE
+#         merged_df["Total FTE"] = ((merged_df["Contact Hours"] * 16 *
+#                                    merged_df["FTE Count"]) / 512).round(3)
+
+#         # sorts the dataframe by sec divisions, sec name
+#         # and sec faculty info and assigns it to groups
+#         groups = merged_df.sort_values(["Sec Divisions", "Sec Name", "Sec Faculty Info"])
+
+#         return groups
+
+#     except FileNotFoundError:
+#         groups = []
+#         print("File Missing!")
+#         return groups
+
+def generate_faculty_fte_report(dean_df, fte_tier, faculty_name):
     """
-    Reads, merges, and processes course and FTE data from CSV and Excel sources
+    Generates an FTE report for a specific faculty member.
 
-    This function:
-    - Reads 'deanDailyCsar.csv' and 'unique_deansDailyCsar_FTE.xlsx'
-    - Extracts 'Course Code' if missing
-    - Merges contact hours into the main dataset
-    - Computes total FTE per section
+    Parameters
+    ----------
+    dean_df : pd.DataFrame
+        The cleaned and merged dean dataset with all sections.
+    fte_tier : pd.DataFrame
+        DataFrame mapping course prefixes to FTE sector multipliers.
+    faculty_name : str
+        Exact match of the faculty member's name from 'Sec Faculty Info'.
+
+    Returns
+    -------
+    pd.DataFrame
+        Formatted faculty FTE report including a summary row.
+    float
+        Total original FTE assigned to the faculty.
+    float
+        Total generated FTE for the faculty using multipliers.
+    """
+
+    # Filter for faculty
+    faculty_df = dean_df[dean_df["Sec Faculty Info"] == faculty_name].copy()
+    faculty_df = remove_duplicate_sections(faculty_df)
+
+    # Select relevant columns
+    cols_to_keep = [
+        "Sec Name", "X Sec Delivery Method", "Meeting Times", "Capacity",
+        "FTE Count", "Total FTE", "Sec Divisions"
+    ]
+    for col in cols_to_keep:
+        if col not in faculty_df.columns:
+            faculty_df[col] = ""
+
+    faculty_df = faculty_df[cols_to_keep]
+
+    # Add Enrollment Percentage
+    faculty_df["Enrollment Per"] = calculate_enrollment_percentage(
+        faculty_df["FTE Count"], faculty_df["Capacity"]
+    )
+
+    # Generate FTE
+    faculty_df = generate_fte(faculty_df, fte_tier)
+
+    # Add course code extraction
+    faculty_df["Course Code"] = faculty_df["Sec Name"].str.extract(r"([A-Z]{3}-\d{3}[A-Z]?)")
+    faculty_df["Instructor"] = faculty_name
+
+    # Compute totals
+    faculty_df["Total FTE"] = pd.to_numeric(faculty_df["Total FTE"], errors='coerce')
+    faculty_df["Generated FTE"] = pd.to_numeric(faculty_df["Generated FTE"], errors='coerce')
+
+    total_original = faculty_df["Total FTE"].sum()
+    total_generated = faculty_df["Generated FTE"].sum()
+
+    # Add summary row
+    summary_row = pd.Series({
+        "Instructor": "",
+        "Course Code": "TOTAL",
+        "Sec Name": "",
+        "X Sec Delivery Method": "",
+        "Meeting Times": "",
+        "Capacity": "",
+        "FTE Count": "",
+        "Total FTE": total_original,
+        "Sec Divisions": "",
+        "Enrollment Per": "",
+        "Generated FTE": total_generated
+    })
+
+    # Reorder columns for output
+    final_cols = [
+        "Instructor", "Course Code", "Sec Name", "X Sec Delivery Method",
+        "Meeting Times", "Capacity", "FTE Count", "Total FTE", "Sec Divisions",
+        "Enrollment Per", "Generated FTE"
+    ]
+
+    final_df = pd.concat([faculty_df[final_cols], pd.DataFrame([summary_row])],
+                         ignore_index=True)
+
+    return final_df, total_original, total_generated
+
+def readfile(uploaded_file=None):
+    """
+    Reads, merges, and processes course and FTE data from CSV and Excel sources.
+    If an uploaded_file is provided, it will be used instead of the default file.
+
+    Parameters
+    ----------
+    uploaded_file : file-like object or None
 
     Returns
     -------
     pd.DataFrame
         Cleaned and sorted merged dataset ready for FTE analysis,
-        or an empty list if files are missing.
+        or an empty DataFrame if file is missing or invalid.
     """
 
     try:
-        # reads the deansDailyCsar.csv and unique_deansDailyCsar_FTE files in to a dataframe
-        file_in = pd.read_csv('deanDailyCsar.csv')
+        if uploaded_file is not None:
+            if uploaded_file.name.endswith('.csv'):
+                file_in = pd.read_csv(uploaded_file)
+            else:
+                file_in = pd.read_excel(uploaded_file)
+        else:
+            file_in = pd.read_csv('deanDailyCsar.csv')
+
         fte_file_in = pd.read_excel('unique_deansDailyCsar_FTE.xlsx')
 
-        # merge prior dataframes
-        # Extract Course Code from Sec Name if not already done
         if "Course Code" not in file_in.columns:
             file_in["Course Code"] = file_in["Sec Name"].str.extract(r"([A-Z]{3}-\d{3})")
 
-        # Also create Course Code in credits_df
         if "Course Code" not in fte_file_in.columns:
             fte_file_in["Course Code"] = fte_file_in["Sec Name"].str.extract(r"([A-Z]{3}-\d{3})")
 
-        # Merge only needed columns from credits_df
         merged_df = pd.merge(
             file_in,
             fte_file_in[["Course Code", "Contact Hours"]],
@@ -72,21 +216,15 @@ def readfile():
         merged_df["Contact Hours"] = pd.to_numeric(merged_df["Contact Hours"], errors='coerce')
         merged_df["FTE Count"] = pd.to_numeric(merged_df["FTE Count"], errors='coerce')
 
-        # Calculate Total FTE
         merged_df["Total FTE"] = ((merged_df["Contact Hours"] * 16 *
                                    merged_df["FTE Count"]) / 512).round(3)
 
-        # sorts the dataframe by sec divisions, sec name
-        # and sec faculty info and assigns it to groups
         groups = merged_df.sort_values(["Sec Divisions", "Sec Name", "Sec Faculty Info"])
-
         return groups
 
-    except FileNotFoundError:
-        groups = []
-        print("File Missing!")
-        return groups
-
+    except Exception as e:
+        print(f"Error loading file: {e}")
+        return pd.DataFrame()
 
 def calc_enrollment(row):
     """
@@ -264,7 +402,7 @@ def format_fte_output(raw_df, original_fte_total, generated_fte_total):
     for _, row in raw_df.iterrows():
         formatted_row = row.copy()
         if isinstance(row['Generated FTE'], (float, int)):
-            formatted_row['Generated FTE'] = "${:,.2f}".format(row['Generated FTE'])
+            formatted_row['Generated FTE'] = "${:,.3f}".format(row['Generated FTE'])
         formatted_rows.append(formatted_row)
 
     df = pd.DataFrame(formatted_rows)
@@ -371,52 +509,68 @@ def calculate_fte_by_course(df, fte_tier, course_code, base_fte=1926):
     return df_out, total_original_fte, total_generated_fte
 
 
-def generate_faculty_fte_report(dean_df, fte_tier, faculty_name):
+def save_faculty_excel(data, instructor_name):
     """
-    Generates an FTE report for a specific faculty member.
-
-    The function:
-    - Filters the data for a faculty match
-    - Removes duplicate sections
-    - Calculates enrollment percentage
-    - Computes generated FTE using multipliers
+    Generates an Excel report for a faculty member with structured formatting.
 
     Parameters
     ----------
-    dean_df : pd.DataFrame
-        The cleaned and merged dean dataset with all sections.
-    fte_tier : pd.DataFrame
-        DataFrame mapping course prefixes to FTE sector multipliers.
-    faculty_name : str
-        Exact match of the faculty member's name from 'Sec Faculty Info'.
-
+    data : pd.DataFrame
+        Cleaned and formatted faculty data.
+    instructor_name : str
+        Name of the instructor.
+    
     Returns
     -------
-    pd.DataFrame
-        Formatted faculty FTE report including a summary row.
-    float
-        Total original FTE assigned to the faculty.
-    float
-        Total generated FTE for the faculty using multipliers.
+    BytesIO
+        A byte stream of the Excel file ready for Streamlit download.
     """
 
-    faculty_df = dean_df[dean_df["Sec Faculty Info"] == faculty_name].copy()
-    faculty_df = opfour.remove_duplicate_sections(faculty_df)
+    # Create in-memory output
+    output = io.BytesIO()
 
-    faculty_df["Enrollment Per"] = opfour.calculate_enrollment_percentage(
-        faculty_df["FTE Count"], faculty_df["Capacity"])
+    # Create Excel writer
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        data.to_excel(writer, sheet_name='Faculty Report', index=False, startrow=1)
 
-    faculty_df = opfour.generate_fte(faculty_df, fte_tier)
+        workbook = writer.book
+        worksheet = writer.sheets['Faculty Report']
 
-    total_original = faculty_df["Total FTE"].sum()
-    total_generated = faculty_df["Generated FTE"].sum()
+        # Define formats
+        header_format = workbook.add_format({"bold": True, "bg_color": "#D9E1F2", "border": 1})
+        money_format = workbook.add_format({"num_format": "$#,##0.00"})
+        number_format = workbook.add_format({"num_format": "#,##0.0"})
+        total_format = workbook.add_format({"bold": True, "bg_color": "#E0E0E0", "border": 1})
 
-    faculty_df["Generated FTE"] = faculty_df["Generated FTE"].apply(lambda x: f"${x:,.2f}")
+        # Set custom header row
+        for col_num, value in enumerate(data.columns):
+            worksheet.write(0, col_num, value, header_format)
 
-    summary_row = pd.Series({
-        "Sec Name": "TOTAL",
-        "Total FTE": total_original,
-        "Generated FTE": f"${total_generated:,.2f}"
-    })
+        # Format numeric columns
+        for col_num, col_name in enumerate(data.columns):
+            if "FTE" in col_name and "Generated" in col_name:
+                worksheet.set_column(col_num, col_num, 15, money_format)
+            elif "FTE" in col_name:
+                worksheet.set_column(col_num, col_num, 12, number_format)
+            elif col_name in ["Instructor", "Course Code", "Sec Name"]:
+                worksheet.set_column(col_num, col_num, 20)
+            else:
+                worksheet.set_column(col_num, col_num, 18)
 
-    return pd.concat([faculty_df, pd.DataFrame([summary_row])], ignore_index=True), total_original, total_generated
+        # Add totals row
+        total_row = len(data) + 1
+        worksheet.write(total_row, 0, "TOTAL", total_format)
+
+        if "Total FTE" in data.columns:
+            worksheet.write_formula(total_row, data.columns.get_loc("Total FTE"),
+                                    f'=SUM(H2:H{total_row})', total_format)
+
+        if "Generated FTE" in data.columns:
+            col_index = data.columns.get_loc("Generated FTE")
+            col_letter = chr(65 + col_index)
+            worksheet.write_formula(total_row, col_index,
+                                    f'=SUM({col_letter}2:{col_letter}{total_row})',
+                                    total_format)
+
+    output.seek(0)
+    return output
