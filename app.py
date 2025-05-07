@@ -536,7 +536,7 @@ elif choice == "FTE by Division":
 
                     # Format for Dataframe
                     frame_df = plot_df.copy()
-                    frame_df = frame_df.iloc[:, -1:]
+                    frame_df = frame_df.iloc[:, :-1]
                     
                     # Display Dataframe
                     st.dataframe(frame_df)
