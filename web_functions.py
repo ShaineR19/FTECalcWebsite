@@ -626,7 +626,7 @@ def save_faculty_excel(data, instructor_name):
             col_letter = xlsxwriter.utility.xl_col_to_name(col_index)
             worksheet.write_formula(total_row, col_index,
                             f'=SUM({col_letter}2:{col_letter}{total_row - 1})',
-                            total_format)
+                            number_format)
 
         if "Generated FTE" in data.columns:
             col_index = data.columns.get_loc("Generated FTE")
