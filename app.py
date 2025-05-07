@@ -772,7 +772,7 @@ elif choice == "FTE per Course":
                 
                 save_report(df_result, f"{course_name}_FTE_Report.xlsx", image=img_bytes)
 
-                st.info(f"Original Total FTE: {original_fte:.3f}")
+                st.info(f"Total FTE: {original_fte:.3f}")
                 st.info(f"Generated FTE: ${generated_fte:,.2f}")
             else:
                 st.warning(f"No data found for course {course_name}")
