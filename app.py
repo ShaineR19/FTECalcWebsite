@@ -395,6 +395,11 @@ elif choice == "Sec Division Report":
                     ax.tick_params(axis='x', rotation=45)
                     st.pyplot(fig)
 
+                    # Save plot to image
+                    img_bytes = io.BytesIO()
+                    fig.savefig(img_bytes, format='png', bbox_inches='tight')
+                    img_bytes.seek(0)
+
                 # Save checkbox
                 save_this = st.checkbox(f"Save report for '{division}'?", key=f"save_{division}")
                 if save_this:
@@ -414,6 +419,7 @@ elif choice == "Sec Division Report":
 
                     try:
                         fn.auto_format_excel(filename)
+                        save_report(df_div, filename, image=img_bytes)
                         st.success(f"Saved and formatted file: {filename}")
                     except Exception as e:
                         st.warning(f"Saved file without formatting: {filename} – {e}")
