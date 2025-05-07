@@ -744,7 +744,7 @@ elif choice == "FTE per Course":
 
                 # Create and flip the chart
                 fig, ax = plt.subplots(figsize=(10, 6))
-                sns.barplot(data=plot_df.head(10), x='Sec Name', y='Generated FTE Float', ax=ax, palette='inferno')
+                sns.barplot(data=plot_df.head(10), x='Sec Name', y='Generated FTE Float', ax=ax, palette='plasma')
 
                 # Label and style
                 ax.set_title(f"Top 10 Sections by Generated FTE for Course {course_name}")
