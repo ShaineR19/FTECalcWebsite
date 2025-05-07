@@ -615,7 +615,7 @@ elif choice == "FTE per Instructor":
                     first_row = False
                     show_course = False
 
-                display_rows.append({
+            display_rows.append({
                     "Instructor": "",
                     "Course Code": "",
                     "Sec Name": "SUBTOTAL",
@@ -630,17 +630,17 @@ elif choice == "FTE per Instructor":
 
              # Append grand total row
              display_rows.append({
-                 "Instructor": "",
-                 "Course Code": "",
-                 "Sec Name": "TOTAL",
-                 "X Sec Delivery Method": "",
-                 "Meeting Times": "",
-                 "Capacity": "",
-                 "FTE Count": "",
-                 "Total FTE": final_total_fte,
-                 "Sec Divisions": "",
-                 "Generated FTE": final_total_gen
-                 })
+             "Instructor": "",
+             "Course Code": "",
+             "Sec Name": "TOTAL",
+             "X Sec Delivery Method": "",
+             "Meeting Times": "",
+             "Capacity": "",
+             "FTE Count": "",
+             "Total FTE": final_total_fte,
+             "Sec Divisions": "",
+             "Generated FTE": final_total_gen
+             })
 
             # Convert to DataFrame
             df_display = pd.DataFrame(display_rows)
