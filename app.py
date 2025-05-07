@@ -754,7 +754,7 @@ elif choice == "FTE per Course":
                 ax.set_title(f"Top 10 Sections by Generated FTE for Course {course_name}", fontsize=16, weight='bold')
                 ax.set_xlabel("Section Name")
                 ax.set_ylabel("Generated FTE ($)")
-                ax.tick_params(axis='y', label_size =10)
+                ax.tick_params(axis='y', labelsize =10)
                 # Data Labels
                 for container in ax.containers:
                     ax.bar_label(container, fmt='${:,.2f}', padding=5, fontsize=10, color='black')
