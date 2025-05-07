@@ -200,7 +200,7 @@ elif choice == "FTE by Division":
             img_bytes.seek(0)
 
             # Save button
-            save_report(report_df, f"{division_input}_FTE_Report.xlsx", image=img_bytes)
+            save_report(format_df, f"{division_input}_FTE_Report.xlsx", image=img_bytes)
 
             st.info(f"Total FTE for {division_input}: {orig_total:.3f}")
             st.info(f"Generated FTE for {division_input}: ${gen_total:,.2f}")
@@ -228,13 +228,19 @@ elif choice == "FTE per Instructor":
                 report_df['Generated FTE Float'] = report_df['Generated FTE']\
                                         .str.replace('[\$,]', '', regex=True)\
                                         .astype(float)
+                # make copy of df for plot
+                plot_df = report_df
+
+                # drop gen fte float
+                report_df = report_df.iloc[:, :-1]
 
                 # Display dataframe
                 st.dataframe(report_df)
 
+
                 # Create Plot
                 fig, ax = plt.subplots()
-                sns.barplot(data=report_df, x='Sec Name', y='Generated FTE Float', ax=ax)
+                sns.barplot(data=plot_df, x='Sec Name', y='Generated FTE Float', ax=ax)
                 ax.set_title(f"Generated FTE per Section for {instructor}")
                 ax.set_xlabel("Section Name")
                 ax.set_ylabel("Generated FTE ($)")
