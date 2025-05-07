@@ -124,7 +124,7 @@ if choice == "Sec Division Report":
             filtered = dean_df[dean_df['Sec Divisions'] == division]
             filtered.index = range(1, len(filtered) + 1)
 
-            st.dataframe(filtered.head(10))
+            st.dataframe(filtered)
             save_report(filtered, f"{division}_Division_Report.xlsx")
     else:
         st.warning("This feature will run when 'Sec Divisions' is available in the dataset.")
@@ -200,7 +200,7 @@ elif choice == "FTE by Division":
             img_bytes.seek(0)
 
             # Save button
-            save_report(report_df, f"{division_input}_FTE_Report.xlsx", image = img_bytes)
+            save_report(report_df, f"{division_input}_FTE_Report.xlsx", image=img_bytes)
 
             st.info(f"Total FTE for {division_input}: {orig_total:.3f}")
             st.info(f"Generated FTE for {division_input}: ${gen_total:,.2f}")
@@ -229,24 +229,35 @@ elif choice == "FTE per Instructor":
 
                 # add gen fte float
                 format_df['Generated FTE Float'] = format_df['Generated FTE']\
-            .str.replace('[\$,]', '', regex=True)\
-            .astype(float)
+                                        .str.replace('[\$,]', '', regex=True)\
+                                        .astype(float)
                 # sort by gen fte
                 # display plot 
                 # save plot as fig
                 # save button
                 # Format dataframe for plot
-                report_df = report_df.sort_values(by='Total FTE',
+                format_df = format_df.sort_values(by='General FTE Float',
                                                   ascending=False)
 
+                # Create Plot
+                fig, ax = plt.subplots()
+                sns.barplot(data=plot_df, x='Sec Name', y='Generated FTE Float', ax=ax)
+                ax.set_title(f"Generated FTE per Section for {instructor}")
+                ax.set_xlabel("Section Name")
+                ax.set_ylabel("Generated FTE ($)")
+                ax.tick_params(axis='x', rotation=45)
+            
                 # Display Plot
-                st.bar_chart(report_df
-                             [report_df['Sec Name'] != 'TOTAL']
-                             .set_index('Sec Name')['Total FTE'])
+                st.pyplot(fig)
+
+                # Save Plot as a png
+                img_bytes = io.BytesIO()
+                fig.savefig(img_bytes, format='png', bbox_inches='tight')
+                img_bytes.seek(0)
 
                 # Save Report
                 filename = opfour.clean_instructor_name(instructor)
-                save_report(report_df, filename)
+                save_report(report_df, filename, image=img_bytes)
 
                 st.info(f"Total FTE: {orig_fte:.3f}")
                 st.info(f"Generated FTE: ${gen_fte:,.2f}")
