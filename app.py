@@ -350,16 +350,16 @@ elif choice == "Sec Division Report":
         # Clean selection controls
         select_all = st.checkbox("Select All Divisions")
         selected_divisions = st.multiselect("Select Division(s)", options=all_divisions)
-        custom_input = st.text_input("Or enter division names separated by commas:")
+        #custom_input = st.text_input("Or enter division names separated by commas:")
 
         # Gather final list
         if select_all:
             final_divisions = all_divisions
         else:
             final_divisions = selected_divisions.copy()
-            if custom_input.strip():
-                custom_list = [x.strip() for x in custom_input.split(",") if x.strip()]
-                final_divisions.extend(custom_list)
+        #if custom_input.strip():
+            #custom_list = [x.strip() for x in custom_input.split(",") if x.strip()]
+            #final_divisions.extend(custom_list)
 
         # Validate and deduplicate
         final_divisions = list(set([div for div in final_divisions if div in all_divisions]))
