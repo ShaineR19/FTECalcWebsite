@@ -224,9 +224,6 @@ elif choice == "FTE per Instructor":
                 report_df = report_df[~report_df['Sec Name'].isin(['Total'])].copy()
                 report_df.index = range(1, len(report_df) + 1)
 
-                # Display dataframe
-                st.dataframe(report_df)
-
                 # add gen fte float
                 report_df['Generated FTE Float'] = report_df['Generated FTE']\
                                         .str.replace('[\$,]', '', regex=True)\
@@ -238,7 +235,7 @@ elif choice == "FTE per Instructor":
 
                 # Display dataframe
                 st.dataframe(report_df)
-                
+
                 # Create Plot
                 fig, ax = plt.subplots()
                 sns.barplot(data=report_df, x='Sec Name', y='Generated FTE Float', ax=ax)
