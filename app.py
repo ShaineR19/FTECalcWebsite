@@ -721,21 +721,28 @@ elif choice == "FTE per Course":
             df_result, original_fte, generated_fte = wf.calculate_fte_by_course(dean_df, fte_tier, course_name)
 
             if df_result is not None:
-                df_result.index = range(1, len(df_result) + 1)
-
-                # Clean and sort data
+                # Clean Totals from df_result
                 plot_df = df_result[df_result['Sec Name'] != 'COURSE TOTAL'].copy()
-                st.dataframe(plot_df)
 
-                # Clean for Plot
-                plot_df['Generated FTE'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
+                # Add a Numeric FTE for Sorting
+                plot_df['Generated FTE Float'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
 
-                # Sort and keep top 10 by highest Generated FTE
-                plot_data = plot_df.sort_values(by='Generated FTE', ascending=False)
+                # Sort by Generated FTE Float
+                plot_data = plot_df.sort_values(by='Generated FTE Float', ascending=False)
+
+                # Reset Index
+                plot_df.index = range(1, len(plot_df) + 1)
+
+                # Create a Dataframe for Display and remove Generated FTE Float
+                report_df = plot_df.copy()
+                report_df = report_df.iloc[:, :-1]
+
+                # Display Dataframe top 10
+                st.dataframe(report_df.head(10))
 
                 # Create and flip the chart
                 fig, ax = plt.subplots(figsize=(10, 6))
-                sns.barplot(data=plot_data, x='Sec Name', y='Generated FTE', ax=ax)
+                sns.barplot(data=plot_df.head(10), x='Sec Name', y='Generated FTE Float', ax=ax)
 
                 # Label and style
                 ax.set_title(f"Top 10 Sections by Generated FTE for Course {course_name}")
