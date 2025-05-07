@@ -726,10 +726,12 @@ elif choice == "FTE per Course":
                 # Clean and sort data
                 plot_df = df_result[df_result['Sec Name'] != 'COURSE TOTAL'].copy()
                 st.dataframe(df_result)
+
+                # Clean for Plot
                 plot_df['Generated FTE'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
 
                 # Sort and keep top 10 by highest Generated FTE
-                plot_data = plot_df.sort_values(by='Generated FTE', ascending=False).head(10)
+                plot_data = plot_df.sort_values(by='Generated FTE', ascending=False)
 
                 # Create and flip the chart
                 fig, ax = plt.subplots(figsize=(10, 6))
