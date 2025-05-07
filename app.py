@@ -722,10 +722,10 @@ elif choice == "FTE per Course":
 
             if df_result is not None:
                 df_result.index = range(1, len(df_result) + 1)
-                st.dataframe(df_result)
 
                 # Clean and sort data
                 plot_df = df_result[df_result['Sec Name'] != 'COURSE TOTAL'].copy()
+                st.dataframe(df_result)
                 plot_df['Generated FTE'] = plot_df['Generated FTE'].str.replace('$', '').str.replace(',', '').astype(float)
 
                 # Sort and keep top 10 by highest Generated FTE
