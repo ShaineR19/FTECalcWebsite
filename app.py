@@ -159,8 +159,8 @@ elif choice == "FTE by Division":
             raw_df, orig_total, gen_total = wf.fte_by_div_raw(dean_df, fte_tier, division_input)
 
             # Format Dataframe
-            report_df = wf.format_fte_output(raw_df, orig_total, gen_total)
-            format_df = report_df[~report_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
+            format_df= wf.format_fte_output(raw_df, orig_total, gen_total)
+            format_df = format_df[~format_df['Course Code'].isin(['Total', 'DIVISION TOTAL'])].copy()
             format_df = format_df.iloc[:, 2:]
 
             # add generated fte float at end(remove money sign, commas)
@@ -171,7 +171,7 @@ elif choice == "FTE by Division":
             # sort by gen fte float
             format_df = format_df.sort_values(by='Generated FTE Float', ascending=False)
 
-            # set index
+            # Set Index
             format_df.index = range(1, len(format_df) + 1)
 
             # make a copy for plot
@@ -216,12 +216,12 @@ elif choice == "FTE per Instructor":
         run = st.button("Run Report")
         if run:
             report_df, orig_fte, gen_fte = wf.generate_faculty_fte_report(dean_df, fte_tier, instructor)
-
             report_df = report_df.fillna("")
 
             if report_df is not None:
                 # Format dataframe
-                format_df = report_df[~report_df['Sec Name'].isin(['Total'])].copy()
+                report_df = report_df.fillna("")
+                report_df = report_df[~report_df['Sec Name'].isin(['Total'])].copy()
                 format_df.index = range(1, len(report_df) + 1)
 
                 # Display dataframe
