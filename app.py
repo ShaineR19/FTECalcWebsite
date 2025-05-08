@@ -470,7 +470,7 @@ elif choice == "Course Enrollment Percentage":
                 img_bytes.seek(0)
             
             # Download section - Fixed
-            if st.download_button(f"📥 Download Report for {course}"):
+            if st.button(f"📥 Download Report for {course}"):
                 # Create a temporary file in a location that Streamlit can write to
                 safe_course = course.replace(" ", "_").lower()
                 filename = f"{safe_course}_enrollment_percentage.xlsx"
