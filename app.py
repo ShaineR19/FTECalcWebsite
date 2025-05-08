@@ -445,6 +445,7 @@ elif choice == "Course Enrollment Percentage":
                 except (ValueError, TypeError, ZeroDivisionError):
                     return None
             filtered["Enrollment Percentage"] = filtered.apply(calc_enrollment, axis=1)
+
             # Format for display
             display_df = filtered.copy()
             display_df["Enrollment Percentage"] = display_df["Enrollment Percentage"].apply(
@@ -469,33 +470,35 @@ elif choice == "Course Enrollment Percentage":
                 img_bytes = io.BytesIO()
                 fig.savefig(img_bytes, format='png', bbox_inches='tight')
                 img_bytes.seek(0)
+
+                save_report(display_df, filename, image=img_bytes)
             
             # Download section - Fixed
-            if st.button(f"📥 Download Report for {course}"):
+            #if st.button(f"📥 Download Report for {course}"):
                 # Create a temporary file in a location that Streamlit can write to
-                safe_course = course.replace(" ", "_").lower()
-                filename = f"{safe_course}_enrollment_percentage.xlsx"
-                temp_path = os.path.join(tempfile.gettempdir(), filename)
+                #safe_course = course.replace(" ", "_").lower()
+                #filename = f"{safe_course}_enrollment_percentage.xlsx"
+                #temp_path = os.path.join(tempfile.gettempdir(), filename)
                 
                 # Save the dataframe to Excel
-                filtered.to_excel()
+                #filtered.to_excel()
                 
                 # Use your existing auto_format_excel function
-                try:
-                    auto_format_excel(filtered)
-                    st.success(f"File formatted successfully")
-                except Exception as e:
-                    st.warning(f"Could not format Excel file: {str(e)}")
+                #try:
+                    #auto_format_excel(filtered)
+                    #st.success(f"File formatted successfully")
+                #except Exception as e:
+                    #st.warning(f"Could not format Excel file: {str(e)}")
                 
                 # Create download button with the formatted file
-                st.download_button(
-                    label=f"💾 Click here to download {filename}",
-                    data=filtered,
-                    file_name=filename,
-                    mime="application/vnd.ms-excel"
-                )
+                #st.download_button(
+                    #label=f"💾 Click here to download {filename}",
+                    #data=filtered,
+                    #file_name=filename,
+                    #mime="application/vnd.ms-excel"
+                #)
                 
-                st.success(f"Report for {course} is ready for download!")
+                #st.success(f"Report for {course} is ready for download!")
         
         elif run and course == "--":
             st.warning("Please select a valid course.")
