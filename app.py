@@ -141,7 +141,7 @@ def save_report(df_full, filename, image=None):
         Suggested default filename for the export.
     """
 
-    user_filename = st.text_input("Enter a filename (e.g., my_report.xlsx):",
+    filename = st.text_input("Enter a filename (e.g., my_report.xlsx):",
                                   value=filename)
 
     if filename:
@@ -472,7 +472,7 @@ elif choice == "Course Enrollment Percentage":
                 img_bytes.seek(0)
 
                 # Save Report
-                filename = f"{course}_Course_Report.csv"
+                filename = f"{course}_Course_Report.xlsx"
                 save_report(display_df, filename, image=img_bytes)
             
             # Download section - Fixed
