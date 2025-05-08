@@ -127,7 +127,7 @@ def save_faculty_excel(data, instructor_name, chart_image=None):
     return output
 
 
-def save_report(df_full, filename, image=None):
+def save_report(df_full, default_filename="report.xlsx", image=None):
     """
     Prompts the user to name and download an Excel report.
 
@@ -135,41 +135,45 @@ def save_report(df_full, filename, image=None):
     ----------
     df_full : pd.DataFrame
         The DataFrame to export.
-    fig : png
-        png of plot to export
-    filename : str
-        Suggested default filename for the export.
+    default_filename : str
+        Default suggested filename (e.g., "report.xlsx").
+    image : str or None
+        Path to PNG image to embed in a secondary worksheet (optional).
     """
 
-    #filename = st.text_input("Enter a filename (e.g., my_report.xlsx):",
-                                  #value=filename)
+    filename = st.text_input("📄 Enter a filename for your report:", value=default_filename)
+
+    # Ensure .xlsx extension
+    if filename and not filename.endswith(".xlsx"):
+        filename += ".xlsx"
 
     if filename:
-
         output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df_full.to_excel(writer, sheet_name='Full Report', index=False)
 
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            # Write DataFrame
+            df_full.to_excel(writer, sheet_name='Full Report', index=False)
             workbook = writer.book
             worksheet = writer.sheets['Full Report']
 
-            # Auto-size each column based on content
+            # Auto-size columns
             for i, column in enumerate(df_full.columns):
-                # Get max length of data and column name
-                col_len = max(
-                    df_full[column].astype(str).map(len).max(),
-                    len(column)
-                )
-                worksheet.set_column(i, i, col_len + 2)  # +2 for padding
+                col_len = max(len(column), df_full[column].astype(str).map(len).max())
+                worksheet.set_column(i, i, col_len + 2)
 
+            # Optional chart/image
             if image:
-                workbook = writer.book
                 chart_sheet = workbook.add_worksheet("Graph Report")
                 writer.sheets["Graph Report"] = chart_sheet
-                chart_sheet.insert_image('A1', image)
+                chart_sheet.insert_image("A1", image)
 
-        st.download_button("Save Report", data=output.getvalue(),
-                           file_name=filename)
+        # Display download button
+        st.download_button(
+            label="💾 Download Excel Report",
+            data=output.getvalue(),
+            file_name=filename,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
 # --- Initialize session state ---
 if 'file_uploaded' not in st.session_state:
