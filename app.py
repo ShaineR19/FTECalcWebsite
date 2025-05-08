@@ -141,8 +141,8 @@ def save_report(df_full, filename, image=None):
         Suggested default filename for the export.
     """
 
-    filename = st.text_input("Enter a filename (e.g., my_report.xlsx):",
-                                  value=filename)
+    #filename = st.text_input("Enter a filename (e.g., my_report.xlsx):",
+                                  #value=filename)
 
     if filename:
 
