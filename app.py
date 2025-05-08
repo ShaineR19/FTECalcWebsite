@@ -471,6 +471,8 @@ elif choice == "Course Enrollment Percentage":
                 fig.savefig(img_bytes, format='png', bbox_inches='tight')
                 img_bytes.seek(0)
 
+                # Save Report
+                filename = f"{course}_Course_Report.csv"
                 save_report(display_df, filename, image=img_bytes)
             
             # Download section - Fixed
