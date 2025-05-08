@@ -452,12 +452,11 @@ elif choice == "Course Enrollment Percentage":
 
             # Format for display
             display_df = filtered.copy()
+            display_df = display_df.sort_values(by='Enrollment Percentage', ascending=False)
             display_df["Enrollment Percentage"] = display_df["Enrollment Percentage"].apply(
                 lambda x: f"{x:.2f}%" if isinstance(x, (float, int)) else "N/A"
             )
-            display_df = display_df[["Sec Name", "Enrollment Percentage"]].dropna().sort_values(
-                by="Enrollment Percentage", ascending=False)
-                
+
             st.dataframe(display_df)
             # Top 10 bar chart
             chart_data = filtered[["Sec Name", "Enrollment Percentage"]].dropna().sort_values(
