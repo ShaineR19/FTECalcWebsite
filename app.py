@@ -463,9 +463,14 @@ elif choice == "Course Enrollment Percentage":
                 ax.tick_params(axis='x', rotation=45)
                 plt.tight_layout()  # Add this to fix layout issues
                 st.pyplot(fig)
+
+                # Save plot to image
+                img_bytes = io.BytesIO()
+                fig.savefig(img_bytes, format='png', bbox_inches='tight')
+                img_bytes.seek(0)
             
             # Download section - Fixed
-            if st.button(f"📥 Download Report for {course}"):
+            if st.download_button(f"📥 Download Report for {course}"):
                 # Create a temporary file in a location that Streamlit can write to
                 safe_course = course.replace(" ", "_").lower()
                 filename = f"{safe_course}_enrollment_percentage.xlsx"
