@@ -169,7 +169,7 @@ def save_report(df_full, filename, image=None):
                 chart_sheet.insert_image('A1', image)
 
         st.download_button("Save Report", data=output.getvalue(),
-                           file_name=user_filename)
+                           file_name=filename)
 
 # --- Initialize session state ---
 if 'file_uploaded' not in st.session_state:
