@@ -431,6 +431,7 @@ elif choice == "Course Enrollment Percentage":
     if 'Sec Name' in dean_df.columns and 'Course Code' in dean_df.columns:
         valid_courses = sorted(dean_df['Course Code'].dropna().unique())
         course = st.selectbox("Select Course", options=["--"] + list(valid_courses))
+
         run = st.button("Run Report")
         if course != "--" and run:
             filtered = dean_df[dean_df['Course Code'] == course].drop_duplicates(subset="Sec Name").copy()
@@ -452,8 +453,8 @@ elif choice == "Course Enrollment Percentage":
             st.dataframe(display_df)
             # Top 10 bar chart
             chart_data = filtered[["Sec Name", "Enrollment Percentage"]].dropna().sort_values(
-                by="Enrollment Percentage", ascending=False
-            ).head(10)
+                by="Enrollment Percentage", ascending=False).head(10)
+
             if not chart_data.empty:
                 fig, ax = plt.subplots(figsize=(10, 5))
                 ax.bar(chart_data["Sec Name"], chart_data["Enrollment Percentage"])
@@ -477,23 +478,19 @@ elif choice == "Course Enrollment Percentage":
                 temp_path = os.path.join(tempfile.gettempdir(), filename)
                 
                 # Save the dataframe to Excel
-                filtered.to_excel(temp_path, index=False)
+                filtered.to_excel()
                 
                 # Use your existing auto_format_excel function
                 try:
-                    auto_format_excel(temp_path)
+                    auto_format_excel(filtered)
                     st.success(f"File formatted successfully")
                 except Exception as e:
                     st.warning(f"Could not format Excel file: {str(e)}")
                 
-                # Read the formatted file for download
-                with open(temp_path, "rb") as file:
-                    file_data = file.read()
-                
                 # Create download button with the formatted file
                 st.download_button(
                     label=f"💾 Click here to download {filename}",
-                    data=file_data,
+                    data=filtered,
                     file_name=filename,
                     mime="application/vnd.ms-excel"
                 )
